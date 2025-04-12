@@ -7,7 +7,7 @@ This repository contains a web search agent built with Google's Agent Developmen
 - Python 3.12 or later
 - Node.js and npm (for Bright Data MCP)
 - Google Gemini API key
-- Bright Data account with access to MCP (Machine Comprehension Platform)
+- Bright Data account with active Web Unblocker API zone (For Browser capabilities, Scraping Browser zone is required as well)
 
 ## Installation
 
