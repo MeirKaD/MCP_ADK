@@ -14,7 +14,7 @@ This repository contains a web search agent built with Google's Agent Developmen
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/MCP_ADK.git
+git clone https://github.com/MeirKaD/MCP_ADK.git
 cd MCP_ADK
 ```
 
