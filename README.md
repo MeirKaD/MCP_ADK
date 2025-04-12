@@ -1,6 +1,6 @@
 # Web Search Agent using Google ADK and Bright Data MCP
 
-This repository contains a web search agent built with Google's Agent Development Kit (ADK) and Bright Data's Machine Comprehension Platform (MCP). The agent can search the web and retrieve information based on user queries.
+This repository contains a web search agent built with Google's Agent Development Kit (ADK) and Bright Data's Model Context Protocol (MCP). The agent can search the web and retrieve information based on user queries.
 
 ## Prerequisites
 
@@ -118,4 +118,4 @@ MIT
 ## Acknowledgements
 
 - Google Agent Development Kit (ADK)
-- Bright Data Machine Comprehension Platform (MCP)
+- Bright Data MCP
