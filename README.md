@@ -1,25 +1,22 @@
 # Web Search Agent using Google ADK and Bright Data MCP
 
-This repository contains a web search agent built with Google's Agent Development Kit (ADK) and Bright Data's Model Context Protocol (MCP). The agent can search the web and retrieve information based on user queries.
+This repository contains the Source Code for an Automated web search agent built with Google's Agent Development Kit (ADK) and Bright Data's Model Context Protocol (MCP). The agent can search the web and retrieve information based on user queries.
 
 ## Prerequisites
-
 - Python 3.12 or later
 - Node.js and npm (for Bright Data MCP)
 - Google Gemini API key
-- Bright Data account with active Web Unblocker API zone (For Browser capabilities, Scraping Browser zone is required as well)
+- Bright Data account with active Web Unlocker API zone (For Browser capabilities, Scraping Browser zone is required as well)
 
 ## Installation
 
 ### 1. Clone the repository
-
 ```bash
 git clone https://github.com/MeirKaD/MCP_ADK.git
 cd MCP_ADK
 ```
 
 ### 2. Create and activate a virtual environment
-
 ```bash
 # For macOS/Linux
 python -m venv .venv
@@ -31,13 +28,11 @@ python -m venv .venv
 ```
 
 ### 3. Install the required packages
-
 ```bash
 pip install google-adk google-generativeai python-dotenv
 ```
 
 ### 4. Install Bright Data MCP package
-
 ```bash
 npm install -g @brightdata/mcp
 ```
@@ -45,13 +40,11 @@ npm install -g @brightdata/mcp
 ### 5. Set up environment variables
 
 Create a `.env` file in the root directory by copying the `.env.template`:
-
 ```bash
 cp .env.template .env
 ```
 
 Then, edit the `.env` file and add your Google Gemini API key:
-
 ```
 GOOGLE_GENAI_USE_VERTEXAI="False"
 GOOGLE_API_KEY="YOUR_GEMINI_API_KEY"
@@ -60,17 +53,15 @@ GOOGLE_API_KEY="YOUR_GEMINI_API_KEY"
 ### 6. Configure Bright Data MCP credentials
 
 Edit the `web_search_agent/agent.py` file and replace the placeholders with your Bright Data credentials:
-
 ```python
 "API_TOKEN": "YOUR_BRIGHT_DATA_API_TOKEN",
-"WEB_UNLOCKER_ZONE": "unblocker",
+"WEB_UNLOCKER_ZONE": "unlocker",
 "BROWSER_AUTH": "brd-customer-YOUR_CUSTOMER_ID-zone-scraping_browser:YOUR_PASSWORD"
 ```
 
 ## Running the Agent with ADK Web Interface
 
 ### 1. Start the ADK Web Server
-
 ```bash
 adk web
 ```
