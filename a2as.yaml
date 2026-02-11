@@ -1,0 +1,164 @@
+manifest:
+  version: "0.1.3"
+  schema: https://a2as.org/cert/schema
+  subject:
+    name: meirkad/mcp_adk
+    source: https://github.com/meirkad/mcp_adk
+    branch: main
+    commit: "d0651df9"
+    scope: [web_search_agent/agent.py]
+  issued:
+    by: A2AS.org
+    at: '2026-02-11T16:33:51Z'
+    url: https://a2as.org/certified/agents/meirkad/mcp_adk
+  signatures:
+    digest: sha256:mTVPo4k27nDC4mEmzn3c9sHCKPMuRTm-AnjdVrzdbCI
+    key: ed25519:XVfCez7zgpwL_5aDPgGZl2MwgXhMYiKWXbheyVfcpZo
+    sig: ed25519:4iaF9hcsZx3fK0zxI3r62eyjXd2yjt2Fya3v9oE9cAahpwRFUUsE83mtW-3Rbtwn_6XS0uuZhcw-9fgHmHzWAw
+
+agents:
+  agent.create_planner_agent:
+    type: factory
+    models: [gemini-2.0-flash]
+    params:
+      name: planner
+      description: Plans research by breaking down complex topics into search queries
+      instruction: ['You are a research planning expert. Your task is to:', 1. Analyze the user's research topic, 2. Break
+          it down into 3-5 specific search queries that together will cover the topic comprehensively, Be concise and focused
+          in your search queries.]
+      output_key: search_queries
+      function: create_planner_agent
+  agent.create_publisher_agent:
+    type: factory
+    models: [gemini-2.0-flash]
+    params:
+      name: publisher
+      description: Synthesizes research findings into a comprehensive and detailed final document
+      instruction: ['You are an expert Technical Writer and Synthesist. Your mission is to transform the detailed research
+          findings provided by the researcher into a comprehensive, well-structured, and insightful final report.', 'Follow
+          these steps meticulously:', '1.  **Deep Analysis & Synthesis:** Carefully review *all* the research findings, summaries,
+          and cited sources provided by the researcher for *all* search queries. Do not just list findings; **synthesize**
+          them. Identify connections, relationships, common themes, contrasting points, and overall patterns across the different
+          pieces of information and sources.', '2.  **Logical Structure:** Organize the synthesized information into a coherent
+          and deeply structured document. Use logical sections and sub-sections with clear, descriptive headings (using Markdown
+          H2, H3, etc.) to group related concepts and findings. A possible structure could be: Introduction, Key Theme/Aspect
+          1 (with sub-points), Key Theme/Aspect 2 (with sub-points), ..., Conclusion, References. Adapt the structure based
+          on the content.', '3.  **Compelling Introduction:** Write a robust introduction that clearly defines the topic,
+          states the report''s main objectives, highlights the key questions or areas explored, and provides a roadmap for
+          the reader, outlining the main sections of the report.', '5.  **Insightful Conclusion:** Craft a strong conclusion
+          that summarizes the most important findings and synthesized insights from the report. Briefly reiterate the main
+          points discussed. You may also briefly mention limitations based *only* on the provided research or suggest natural
+          next steps *if strongly implied* by the findings, but do *not* introduce entirely new information or opinions.',
+        '6.  **Professional Formatting:** Format the entire document using clean and consistent Markdown. Utilize headings,
+          lists (bulleted and numbered), bold/italic emphasis, and potentially blockquotes effectively to enhance readability
+          and structure.', '7.  **Comprehensive References:** Create a dedicated "References" section at the very end. List
+          *all* unique source URLs that were cited in the researcher''s findings and used in your report. Ensure the list
+          is clean and easy to read.', '8.  **Tone and Quality:** Maintain a professional, objective, and informative tone
+          throughout the report. Ensure the language is clear, precise, and accurate according to the research. Strive for
+          a high-quality, polished final document that is significantly more detailed and synthesized than the raw researcher
+          output. Cover all key aspects comprehensively.']
+      output_key: final_document
+      function: create_publisher_agent
+  agent.create_researcher_agent:
+    type: factory
+    models: [gemini-2.0-flash]
+    params:
+      name: researcher
+      description: Executes web searches and extracts relevant information
+      instruction: ['You are a web researcher. You will:', 1. Take the specific search queries from the planner, '2. For EACH
+          query:', a. Use search_engine to find relevant information (start with "google" engine), 'b. Select 2-3 most relevant
+          results and for each result:', i. Use scraping_browser_navigate to navigate to the URL, ii. Use scraping_browser_get_text
+          to extract the main content, 'iii. If needed, use scraping_browser_links to find important sections and scraping_browser_click
+          to navigate to them', 'c. If a page fails to load or lacks information, try another result', 3. Summarize key findings
+          for each query with source citations, 'IMPORTANT:', '- Always begin with search_engine to discover relevant pages',
+        '- Then use browser tools in this sequence:', 1. scraping_browser_navigate (to go to the URL), 2. scraping_browser_get_text
+          (to extract content), 3. scraping_browser_links and scraping_browser_click (if you need to navigate within the site),
+        '- Include clear citations with URLs for each piece of information', '- Format your findings for each search query
+          separately']
+      before_model_callback: check_researcher_tools
+      function: create_researcher_agent
+  root_agent:
+    type: instance
+    params:
+      name: web_research_agent
+      description: An agent that researches topics on the web and creates comprehensive reports
+      sub_agents: [create_planner_agent, create_researcher_agent, create_publisher_agent]
+
+models:
+  gemini-2.0-flash:
+    type: literal
+    agents: [agent.create_planner_agent, agent.create_researcher_agent, agent.create_publisher_agent]
+
+mcp:
+  tools:
+    type: process
+    params:
+      class: MCPToolset
+      method: from_server
+      connection_type: StdioServerParameters
+      command: npx
+      args: [-y, '@brightdata/mcp']
+      env:
+        API_TOKEN: YOUR_API_TOKEN
+        WEB_UNLOCKER_ZONE: UB_ZONE
+        BROWSER_AUTH: SBR_USER:SBR_PASS
+
+teams:
+  root_agent:
+    type: sequential
+    agents: [root_agent, create_planner_agent, create_researcher_agent, create_publisher_agent]
+
+imports:
+  Agent: google.adk.agents.Agent
+  agent: agent
+  asyncio: asyncio
+  atexit: atexit
+  CallbackContext: google.adk.agents.callback_context.CallbackContext
+  Event: google.adk.events.Event
+  EventActions: google.adk.events.EventActions
+  LlmRequest: google.adk.models.LlmRequest
+  LlmResponse: google.adk.models.LlmResponse
+  load_dotenv: dotenv.load_dotenv
+  LoopAgent: google.adk.agents.LoopAgent
+  MCPToolset: google.adk.tools.mcp_tool.mcp_toolset.MCPToolset
+  Optional: typing.Optional
+  os: os
+  SequentialAgent: google.adk.agents.SequentialAgent
+  StdioServerParameters: google.adk.tools.mcp_tool.mcp_toolset.StdioServerParameters
+  threading: threading
+  types: google.genai.types
+
+functions:
+  check_researcher_tools:
+    type: sync
+    module: web_search_agent.agent
+    args: [callback_context, llm_request]
+    params:
+      returns: Optional[LlmResponse]
+  cleanup_mcp:
+    type: sync
+    module: web_search_agent.agent
+  create_planner_agent:
+    type: sync
+    module: web_search_agent.agent
+  create_publisher_agent:
+    type: sync
+    module: web_search_agent.agent
+  create_researcher_agent:
+    type: sync
+    module: web_search_agent.agent
+  initialize_mcp_tools:
+    type: async
+    module: web_search_agent.agent
+  wait_for_initialization:
+    type: async
+    module: web_search_agent.agent
+
+processes:
+  npx:
+    type: mcp
+    actions: [exec]
+    args: [[-y, '@brightdata/mcp']]
+    params:
+      caller: [StdioServerParameters]
+      shell: ["False"]
